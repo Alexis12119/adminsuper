@@ -99,7 +99,7 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
                 name: facultyData['name'],
                 email: facultyData['email'],
                 password: facultyData['password'],
-                color: Colors.blue,
+                color: Colors.grey,
               ))
           .toList();
       print(response);
