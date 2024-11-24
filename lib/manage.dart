@@ -63,7 +63,7 @@ class UnenrolledStudent {
   final String firstName;
   final String lastName;
   final String email;
-  final String password; 
+  final String password;
   final String status;
   final int yearNumber;
   final int? sectionId;
@@ -75,7 +75,7 @@ class UnenrolledStudent {
     required this.firstName,
     required this.lastName,
     required this.email,
-    required this.password, 
+    required this.password,
     required this.status,
     required this.yearNumber,
     this.sectionId,
@@ -89,7 +89,7 @@ class UnenrolledStudent {
       firstName: json['first_name'],
       lastName: json['last_name'],
       email: json['email'],
-      password: json['password'], 
+      password: json['password'],
       status: json['status'],
       yearNumber: json['year_number'],
       sectionId: json['section_id'],
@@ -120,6 +120,62 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _loadData();
+  }
+
+  Widget buildHeader() {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double mainFontSize = screenWidth < 800 ? 22.0 : 28.0;
+    double subFontSize = screenWidth < 800 ? 14.0 : 18.0;
+    double padding = screenWidth < 600 ? 12.0 : 16.0;
+    double iconSize = screenWidth < 600 ? 50.0 : 70.0;
+
+    return Container(
+      color: const Color(0xFFF2F8FC),
+      padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding * 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/image/plsp.png',
+            width: iconSize,
+            height: iconSize,
+          ),
+          const SizedBox(width: 10),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'PAMANTASAN NG LUNGSOD NG SAN PABLO',
+                style: TextStyle(
+                  fontSize: mainFontSize,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4.0),
+              Text(
+                'College of Computer Studies and Technology',
+                style: TextStyle(
+                  fontSize: subFontSize,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          const SizedBox(width: 10),
+          Image.asset(
+            'assets/image/ccst.png',
+            width: iconSize,
+            height: iconSize,
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadData() async {
@@ -212,7 +268,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
           'email': student.email,
           'first_name': student.firstName,
           'last_name': student.lastName,
-          'password': student.password, 
+          'password': student.password,
           'department_id': result['departmentId'],
           'program_id': result['programId'],
           'section_id': result['sectionId'],
@@ -259,6 +315,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+      backgroundColor: const Color(0xFFF2F8FC),
         title: Text('Manage Students'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -268,10 +325,12 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
           ),
         ),
       ),
+      backgroundColor: Color(0xFFF2F8FC),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                buildHeader(),
                 TabBar(
                   controller: _tabController,
                   labelColor: Colors.black,
@@ -391,7 +450,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
                                     Text(
                                         'Program: ${student['college_program']['name']}'),
                                     Text(
-                                        'Year & Section: ${student['section']['year_number']}${student['section']['name']}'), 
+                                        'Year & Section: ${student['section']['year_number']}${student['section']['name']}'),
                                   ],
                                 ),
                                 isThreeLine: true,

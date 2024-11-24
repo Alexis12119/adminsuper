@@ -35,8 +35,7 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
     double iconSize = screenWidth < 600 ? 50.0 : 70.0;
 
     return Container(
-      // color: const Color(0xFFF2F8FC),
-      color: Colors.white,
+      color: const Color(0xFFF2F8FC),
       padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding * 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -122,7 +121,6 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
 
 Future<void> updateFaculty(Faculty faculty) async {
   try {
-    if (faculty.id != null) {  // Ensure the id is not null
       await Supabase.instance.client.from('faculty').update({
         'name': faculty.name,
         'email': faculty.email,
@@ -138,14 +136,6 @@ Future<void> updateFaculty(Faculty faculty) async {
           ),
         ),
       );
-    } else {
-      // Handle the case where id is null
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Faculty ID is null. Cannot update faculty data.'),
-        ),
-      );
-    }
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -165,8 +155,8 @@ Future<void> updateFaculty(Faculty faculty) async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SALI-SEEK'),
-        backgroundColor: Colors.white,
+        title: const Text('Faculty'),
+        backgroundColor: Color(0xFFF2F8FC),
         foregroundColor: Colors.black,
         centerTitle: true,
         elevation: 0,
@@ -180,6 +170,7 @@ Future<void> updateFaculty(Faculty faculty) async {
           },
         ),
       ),
+      backgroundColor: Color(0xFFF2F8FC),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : LayoutBuilder(

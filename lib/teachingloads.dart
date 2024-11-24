@@ -24,7 +24,7 @@ class _AppState extends State<App> {
   final TextEditingController courseTitleController = TextEditingController();
   final List<String> courses = [];
   int courseId = 0;
-
+  final List<RealtimeChannel> _subscriptions = [];
   // Dropdown values for instructor, day, time, and section
   List<Map<String, dynamic>> instructors = [];
   List<String> days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -40,6 +40,29 @@ class _AppState extends State<App> {
     fetchCourses();
     fetchInstructors();
     fetchSections();
+    subscribeToCourseChanges();
+  }
+
+  @override
+  void dispose() {
+    for (var subscription in _subscriptions) {
+      subscription.unsubscribe();
+    }
+    super.dispose();
+  }
+
+  void subscribeToCourseChanges() {
+    final courseChannel = supabase
+        .channel('public')
+        .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'college_course',
+            callback: (payload) {
+              fetchCourses();
+            })
+        .subscribe();
+    _subscriptions.add(courseChannel);
   }
 
   // Fetch current courses from Supabase
@@ -159,8 +182,8 @@ class _AppState extends State<App> {
                       onPressed: addCourse,
                       child: Text('Add Course'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Color(0xFF2C9B44),
+                        foregroundColor: Color(0xFFF2F8FC),
                         padding:
                             EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                       ),
@@ -265,7 +288,6 @@ class _AppState extends State<App> {
           content: SingleChildScrollView(
             child: Column(
               children: [
-                // Select Instructor
                 DropdownButton<String>(
                   hint: Text('Select Instructor'),
                   value: selectedInstructor,
@@ -282,9 +304,7 @@ class _AppState extends State<App> {
                     });
                   },
                 ),
-                SizedBox(height: 10),
 
-                // Select Day
                 DropdownButton<String>(
                   hint: Text('Select Day'),
                   value: selectedDay,
@@ -301,9 +321,7 @@ class _AppState extends State<App> {
                     });
                   },
                 ),
-                SizedBox(height: 10),
 
-                // Select Time
                 DropdownButton<String>(
                   hint: Text('Select Time'),
                   value: selectedTime,
@@ -320,9 +338,7 @@ class _AppState extends State<App> {
                     });
                   },
                 ),
-                SizedBox(height: 10),
 
-                // Select Section
                 DropdownButton<String>(
                   hint: Text('Select Section'),
                   value: selectedSection,
@@ -414,6 +430,7 @@ class _AppState extends State<App> {
       ),
       home: Scaffold(
         appBar: AppBar(
+          backgroundColor: const Color(0xFFF2F8FC),
           title: Text('Teaching Loads'),
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
@@ -425,7 +442,7 @@ class _AppState extends State<App> {
             },
           ),
         ),
-        backgroundColor: Colors.grey[100],
+        backgroundColor: Color(0xFFF2F8FC),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -473,9 +490,11 @@ class _AppState extends State<App> {
                     (index) {
                       return Card(
                         margin: EdgeInsets.symmetric(vertical: 10),
+                        color: Color(0xFF2C9B44),
                         elevation: 4,
                         child: ListTile(
-                          title: Text(courses[index]),
+                          title: Text(courses[index],
+                              style: TextStyle(color: Color(0xFFF2F8FC))),
                           onTap: () {
                             showSelectCourseDialog(courses[index]);
                           },
