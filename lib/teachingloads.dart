@@ -139,15 +139,33 @@ class _AppState extends State<App> {
                 ),
                 SizedBox(height: 20),
 
-                // Add Course Button
-                ElevatedButton(
-                  onPressed: addCourse,
-                  child: Text('Add Course'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  ),
+                // Row for the buttons (Add Course and Cancel)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Cancel Button
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+
+                    // Add Course Button
+                    ElevatedButton(
+                      onPressed: addCourse,
+                      child: Text('Add Course'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -204,192 +222,189 @@ class _AppState extends State<App> {
     }
   }
 
+  void showSelectCourseDialog(String courseTitle) async {
+    String? selectedInstructor;
+    String? selectedDay;
+    String? selectedTime;
+    String? selectedSection;
+    int? courseYearNumber;
 
-void showSelectCourseDialog(String courseTitle) async {
-  String? selectedInstructor;
-  String? selectedDay;
-  String? selectedTime;
-  String? selectedSection;
-  int? courseYearNumber;
+    // Extract the course code from the courseTitle (assuming it's the first part of the string)
+    final courseCode = courseTitle.split(' - ')[0];
 
-  // Extract the course code from the courseTitle (assuming it's the first part of the string)
-  final courseCode = courseTitle.split(' - ')[0];
+    // Fetch the course details from the database using the course code
+    final courseResponse = await supabase
+        .from('college_course')
+        .select('year_number, semester')
+        .eq('code', courseCode)
+        .single();
 
-  // Fetch the course details from the database using the course code
-  final courseResponse = await supabase
-      .from('college_course')
-      .select('year_number, semester')
-      .eq('code', courseCode)
-      .single();
+    courseYearNumber = courseResponse['year_number'];
 
-  courseYearNumber = courseResponse['year_number'];
+    // Show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        double screenWidth = MediaQuery.of(context).size.width;
+        double headerFontSize = screenWidth < 600 ? 18.0 : 24.0;
+        double padding = screenWidth < 600 ? 12.0 : 20.0;
 
-  // Show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      double screenWidth = MediaQuery.of(context).size.width;
-      double headerFontSize = screenWidth < 600 ? 18.0 : 24.0;
-      double padding = screenWidth < 600 ? 12.0 : 20.0;
-
-      return AlertDialog(
-        title: Stack(
-          children: [
-            Container(
-              padding: EdgeInsets.all(padding),
-              color: Colors.green, // Green background
-              child: Text(
-                courseTitle,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: headerFontSize,
-                  fontWeight: FontWeight.bold,
-                ),
+        return AlertDialog(
+          title: Container(
+            padding: EdgeInsets.all(padding),
+            color: Colors.green, // Green background
+            child: Text(
+              courseTitle,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: headerFontSize,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            Positioned(
-              right: 0,
-              top: 0,
-              child: IconButton(
-                icon: Icon(Icons.close, color: Colors.white),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          // Additional actions can be added here if needed
-        ],
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Select Instructor
-              DropdownButton<String>(
-                hint: Text('Select Instructor'),
-                value: selectedInstructor,
-                items: instructors
-                    .map((instructor) => DropdownMenuItem<String>(
-                          value: instructor['id'].toString(),
-                          child: Text(instructor['name']),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedInstructor = value;
-                    print('Instructor selected: $value');
-                  });
-                },
-              ),
-              SizedBox(height: 10),
-
-              // Select Day
-              DropdownButton<String>(
-                hint: Text('Select Day'),
-                value: selectedDay,
-                items: days
-                    .map((day) => DropdownMenuItem<String>(
-                          value: day,
-                          child: Text(day),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedDay = value;
-                    print('Day selected: $value');
-                  });
-                },
-              ),
-              SizedBox(height: 10),
-
-              // Select Time
-              DropdownButton<String>(
-                hint: Text('Select Time'),
-                value: selectedTime,
-                items: times
-                    .map((time) => DropdownMenuItem<String>(
-                          value: time,
-                          child: Text(time),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedTime = value;
-                    print('Time selected: $value');
-                  });
-                },
-              ),
-              SizedBox(height: 10),
-
-              // Select Section
-              DropdownButton<String>(
-                hint: Text('Select Section'),
-                value: selectedSection,
-                items: sections
-                    .where((section) =>
-                        section['year'] == courseYearNumber.toString())
-                    .map((section) => DropdownMenuItem<String>(
-                          value: section['id'].toString(),
-                          child: Text('${section['year']}${section['name']}'),
-                        ))
-                    .toList(),
-                onChanged: (value) async {
-                  setState(() {
-                    selectedSection = value;
-                    print('Section ID selected: $selectedSection');
-                  });
-                },
-              ),
-              SizedBox(height: 20),
-
-              // Save Button
-              ElevatedButton(
-                onPressed: () async {
-                  if (selectedInstructor != null &&
-                      selectedDay != null &&
-                      selectedTime != null &&
-                      selectedSection != null) {
-                    final courseResponse = await supabase
-                        .from('college_course')
-                        .select('id')
-                        .eq('code', courseCode)
-                        .maybeSingle();
-
-                    final courseId =
-                        courseResponse?['id']; // Extract course_id
-                    print(courseId);
-                    // Insert or update the teacher_courses table
-                    await supabase.from('teacher_courses').insert([
-                      {
-                        'teacher_id': selectedInstructor,
-                        'course_id': courseId,
-                        'day': selectedDay,
-                        'time': selectedTime,
-                        'section_id': selectedSection,
-                      }
-                    ]);
-                  } else {
-                    print('Please select all fields');
-                  }
-                },
-                child: Text('Save'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                ),
-              ),
-            ],
           ),
-        ),
-      );
-    },
-  );
-}
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                // Select Instructor
+                DropdownButton<String>(
+                  hint: Text('Select Instructor'),
+                  value: selectedInstructor,
+                  items: instructors
+                      .map((instructor) => DropdownMenuItem<String>(
+                            value: instructor['id'].toString(),
+                            child: Text(instructor['name']),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedInstructor = value;
+                      print('Instructor selected: $value');
+                    });
+                  },
+                ),
+                SizedBox(height: 10),
 
-// Show form for adding new course
+                // Select Day
+                DropdownButton<String>(
+                  hint: Text('Select Day'),
+                  value: selectedDay,
+                  items: days
+                      .map((day) => DropdownMenuItem<String>(
+                            value: day,
+                            child: Text(day),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedDay = value;
+                      print('Day selected: $value');
+                    });
+                  },
+                ),
+                SizedBox(height: 10),
 
+                // Select Time
+                DropdownButton<String>(
+                  hint: Text('Select Time'),
+                  value: selectedTime,
+                  items: times
+                      .map((time) => DropdownMenuItem<String>(
+                            value: time,
+                            child: Text(time),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedTime = value;
+                      print('Time selected: $value');
+                    });
+                  },
+                ),
+                SizedBox(height: 10),
+
+                // Select Section
+                DropdownButton<String>(
+                  hint: Text('Select Section'),
+                  value: selectedSection,
+                  items: sections
+                      .where((section) =>
+                          section['year'] == courseYearNumber.toString())
+                      .map((section) => DropdownMenuItem<String>(
+                            value: section['id'].toString(),
+                            child: Text('${section['year']}${section['name']}'),
+                          ))
+                      .toList(),
+                  onChanged: (value) async {
+                    setState(() {
+                      selectedSection = value;
+                      print('Section ID selected: $selectedSection');
+                    });
+                  },
+                ),
+                SizedBox(height: 20),
+
+                // Row for the buttons (Cancel and Save)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Cancel Button
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+
+                    // Save Button
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (selectedInstructor != null &&
+                            selectedDay != null &&
+                            selectedTime != null &&
+                            selectedSection != null) {
+                          final courseResponse = await supabase
+                              .from('college_course')
+                              .select('id')
+                              .eq('code', courseCode)
+                              .maybeSingle();
+
+                          final courseId =
+                              courseResponse?['id']; // Extract course_id
+                          print(courseId);
+                          // Insert or update the teacher_courses table
+                          await supabase.from('teacher_courses').insert([
+                            {
+                              'teacher_id': selectedInstructor,
+                              'course_id': courseId,
+                              'day': selectedDay,
+                              'time': selectedTime,
+                              'section_id': selectedSection,
+                            }
+                          ]);
+                        } else {
+                          print('Please select all fields');
+                        }
+                      },
+                      child: Text('Save'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
