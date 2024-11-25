@@ -155,7 +155,7 @@ Future<void> updateFaculty(Faculty faculty) async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Faculty'),
+        title: const Text('Faculty Members Account'),
         backgroundColor: Color(0xFFF2F8FC),
         foregroundColor: Colors.black,
         centerTitle: true,

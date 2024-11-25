@@ -14,7 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<String> cardOrder = ['Manage Students', 'Finalize Grades', 'Teaching Loads', 'Account'];
+  final List<String> cardOrder = ['Manage Students', 'Finalize Grades', 'Teaching Loads', 'Faculty Members Account'];
   final SwiperController _swiperController = SwiperController();
 
   // Configurable button sizes
@@ -93,7 +93,7 @@ class _HomePageState extends State<HomePage> {
                                 context,
                                 MaterialPageRoute(builder: (context) => App()),
                               );
-                            } else if (cardOrder[index] == 'Account') {
+                            } else if (cardOrder[index] == 'Faculty Members Account') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => AccountsScreen()),
@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
                                       width: 200,
                                       height: 200,
                                     )
-                                        : cardOrder[index] == 'Account'
+                                        : cardOrder[index] == 'Faculty Members Account'
                                         ? Image.asset(
                                       'assets/image/profile.png',
                                       width: 200,

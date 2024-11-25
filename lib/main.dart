@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/image/backroundplsp.jpg.jpg',
+              'assets/image/backgroundplsp.jpg.jpg',
               fit: BoxFit
                   .cover, // Change this value to adjust the background image size
             ),
