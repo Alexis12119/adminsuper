@@ -251,16 +251,35 @@ class _AppState extends State<App> {
     String? selectedTime;
     String? selectedSection;
     int? courseYearNumber;
+    List<Map<String, dynamic>> availableInstructors = [];
 
     final courseCode = courseTitle.split(' - ')[0];
 
+    // Get course details including ID
     final courseResponse = await supabase
         .from('college_course')
-        .select('year_number, semester')
+        .select('id, year_number, semester')
         .eq('code', courseCode)
         .single();
 
     courseYearNumber = courseResponse['year_number'];
+    final courseId = courseResponse['id'];
+
+    // Get already assigned instructors for this course
+    final assignedInstructors = await supabase
+        .from('teacher_courses')
+        .select('teacher_id')
+        .eq('course_id', courseId);
+
+    // Create a set of assigned instructor IDs for easier lookup
+    final assignedInstructorIds = Set.from(
+        assignedInstructors.map((record) => record['teacher_id'].toString()));
+
+    // Filter out already assigned instructors
+    availableInstructors = instructors
+        .where((instructor) =>
+            !assignedInstructorIds.contains(instructor['id'].toString()))
+        .toList();
 
     showDialog(
       context: context,
@@ -287,21 +306,34 @@ class _AppState extends State<App> {
               content: SingleChildScrollView(
                 child: Column(
                   children: [
+                    if (availableInstructors.isEmpty)
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'All instructors are already assigned to this course.',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     DropdownButton<String>(
                       hint: Text('Select Instructor'),
                       value: selectedInstructor,
-                      items: instructors
+                      items: availableInstructors
                           .map((instructor) => DropdownMenuItem<String>(
                                 value: instructor['id'].toString(),
                                 child: Text(instructor['name']),
                               ))
                           .toList(),
-                      onChanged: (value) {
-                        setDialogState(() {
-                          selectedInstructor = value;
-                          print('Instructor selected: $value');
-                        });
-                      },
+                      onChanged: availableInstructors.isEmpty
+                          ? null
+                          : (value) {
+                              setDialogState(() {
+                                selectedInstructor = value;
+                                print('Instructor selected: $value');
+                              });
+                            },
                     ),
                     DropdownButton<String>(
                       hint: Text('Select Day'),
@@ -368,34 +400,29 @@ class _AppState extends State<App> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: () async {
-                            if (selectedInstructor != null &&
-                                selectedDay != null &&
-                                selectedTime != null &&
-                                selectedSection != null) {
-                              final courseResponse = await supabase
-                                  .from('college_course')
-                                  .select('id')
-                                  .eq('code', courseCode)
-                                  .maybeSingle();
-
-                              final courseId = courseResponse?['id'];
-                              print(courseId);
-
-                              await supabase.from('teacher_courses').insert([
-                                {
-                                  'teacher_id': selectedInstructor,
-                                  'course_id': courseId,
-                                  'day': selectedDay,
-                                  'time': selectedTime,
-                                  'section_id': selectedSection,
-                                }
-                              ]);
-                              Navigator.of(context).pop();
-                            } else {
-                              print('Please select all fields');
-                            }
-                          },
+                          onPressed: availableInstructors.isEmpty
+                              ? null
+                              : () async {
+                                  if (selectedInstructor != null &&
+                                      selectedDay != null &&
+                                      selectedTime != null &&
+                                      selectedSection != null) {
+                                    await supabase
+                                        .from('teacher_courses')
+                                        .insert([
+                                      {
+                                        'teacher_id': selectedInstructor,
+                                        'course_id': courseId,
+                                        'day': selectedDay,
+                                        'time': selectedTime,
+                                        'section_id': selectedSection,
+                                      }
+                                    ]);
+                                    Navigator.of(context).pop();
+                                  } else {
+                                    print('Please select all fields');
+                                  }
+                                },
                           child: Text('Save'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
