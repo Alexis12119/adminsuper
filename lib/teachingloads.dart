@@ -450,19 +450,6 @@ class _AppState extends State<App> {
         fontFamily: 'Montserrat',
       ),
       home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFF2F8FC),
-          title: Text('Teaching Loads'),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
-              );
-            },
-          ),
-        ),
         backgroundColor: Color(0xFFF2F8FC),
         body: SingleChildScrollView(
           child: Column(
@@ -543,15 +530,15 @@ class _AppState extends State<App> {
       color: const Color(0xFFF2F8FC),
       padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding * 2),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Left icon
           Image.asset(
             'assets/image/plsp.png',
             width: iconSize,
             height: iconSize,
           ),
-          const SizedBox(width: 10),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -577,14 +564,29 @@ class _AppState extends State<App> {
               ),
             ],
           ),
-          const SizedBox(width: 10),
-          Image.asset(
-            'assets/image/ccst.png',
-            width: iconSize,
-            height: iconSize,
+          // Right icon and home button
+          Row(
+            children: [
+              Image.asset(
+                'assets/image/ccst.png',
+                width: iconSize,
+                height: iconSize,
+              ),
+              IconButton(
+                icon: Icon(Icons.home),
+                iconSize: iconSize / 2,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomePage()),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+
 }

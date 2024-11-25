@@ -122,7 +122,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
     _loadData();
   }
 
-  Widget buildHeader() {
+   Widget buildHeader() {
     double screenWidth = MediaQuery.of(context).size.width;
     double mainFontSize = screenWidth < 800 ? 22.0 : 28.0;
     double subFontSize = screenWidth < 800 ? 14.0 : 18.0;
@@ -133,15 +133,15 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
       color: const Color(0xFFF2F8FC),
       padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding * 2),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Left icon
           Image.asset(
             'assets/image/plsp.png',
             width: iconSize,
             height: iconSize,
           ),
-          const SizedBox(width: 10),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -167,11 +167,25 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
               ),
             ],
           ),
-          const SizedBox(width: 10),
-          Image.asset(
-            'assets/image/ccst.png',
-            width: iconSize,
-            height: iconSize,
+          // Right icon and home button
+          Row(
+            children: [
+              Image.asset(
+                'assets/image/ccst.png',
+                width: iconSize,
+                height: iconSize,
+              ),
+              IconButton(
+                icon: Icon(Icons.home),
+                iconSize: iconSize / 2,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomePage()),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -314,17 +328,6 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-      backgroundColor: const Color(0xFFF2F8FC),
-        title: Text('Manage Students'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          ),
-        ),
-      ),
       backgroundColor: Color(0xFFF2F8FC),
       body: isLoading
           ? Center(child: CircularProgressIndicator())

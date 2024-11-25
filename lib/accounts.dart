@@ -27,7 +27,7 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
   final List<Faculty> facultyList = [];
   bool isLoading = true;
 
-  Widget buildHeader() {
+    Widget buildHeader() {
     double screenWidth = MediaQuery.of(context).size.width;
     double mainFontSize = screenWidth < 800 ? 22.0 : 28.0;
     double subFontSize = screenWidth < 800 ? 14.0 : 18.0;
@@ -38,15 +38,15 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
       color: const Color(0xFFF2F8FC),
       padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding * 2),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Left icon
           Image.asset(
             'assets/image/plsp.png',
             width: iconSize,
             height: iconSize,
           ),
-          const SizedBox(width: 10),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -72,11 +72,25 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
               ),
             ],
           ),
-          const SizedBox(width: 10),
-          Image.asset(
-            'assets/image/ccst.png',
-            width: iconSize,
-            height: iconSize,
+          // Right icon and home button
+          Row(
+            children: [
+              Image.asset(
+                'assets/image/ccst.png',
+                width: iconSize,
+                height: iconSize,
+              ),
+              IconButton(
+                icon: Icon(Icons.home),
+                iconSize: iconSize / 2,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomePage()),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -154,22 +168,6 @@ Future<void> updateFaculty(Faculty faculty) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Faculty Members Account'),
-        backgroundColor: Color(0xFFF2F8FC),
-        foregroundColor: Colors.black,
-        centerTitle: true,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2C9B44)),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-            );
-          },
-        ),
-      ),
       backgroundColor: Color(0xFFF2F8FC),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -276,15 +274,20 @@ class _FacultyCardState extends State<FacultyCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(4),
-      padding: const EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 2,
+            color: Colors.grey.shade400,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.grey.shade200,
+            blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
@@ -295,9 +298,9 @@ class _FacultyCardState extends State<FacultyCard> {
           CircleAvatar(
             radius: 50,
             backgroundColor: widget.faculty.color,
-            child: const Icon(Icons.person, size: 40),
+            child: const Icon(Icons.person, size: 40, color: Colors.white),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           TextField(
             controller: nameController,
             decoration: const InputDecoration(labelText: 'Name'),
@@ -323,7 +326,7 @@ class _FacultyCardState extends State<FacultyCard> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
               widget.onSave(
