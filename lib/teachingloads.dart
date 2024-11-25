@@ -252,10 +252,8 @@ class _AppState extends State<App> {
     String? selectedSection;
     int? courseYearNumber;
 
-    // Extract the course code from the courseTitle (assuming it's the first part of the string)
     final courseCode = courseTitle.split(' - ')[0];
 
-    // Fetch the course details from the database using the course code
     final courseResponse = await supabase
         .from('college_course')
         .select('year_number, semester')
@@ -264,159 +262,155 @@ class _AppState extends State<App> {
 
     courseYearNumber = courseResponse['year_number'];
 
-    // Show the dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        double screenWidth = MediaQuery.of(context).size.width;
-        double headerFontSize = screenWidth < 600 ? 18.0 : 24.0;
-        double padding = screenWidth < 600 ? 12.0 : 20.0;
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            double screenWidth = MediaQuery.of(context).size.width;
+            double headerFontSize = screenWidth < 600 ? 18.0 : 24.0;
+            double padding = screenWidth < 600 ? 12.0 : 20.0;
 
-        return AlertDialog(
-          title: Container(
-            padding: EdgeInsets.all(padding),
-            color: Colors.green, // Green background
-            child: Text(
-              courseTitle,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: headerFontSize,
-                fontWeight: FontWeight.bold,
+            return AlertDialog(
+              title: Container(
+                padding: EdgeInsets.all(padding),
+                color: Colors.green,
+                child: Text(
+                  courseTitle,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: headerFontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                DropdownButton<String>(
-                  hint: Text('Select Instructor'),
-                  value: selectedInstructor,
-                  items: instructors
-                      .map((instructor) => DropdownMenuItem<String>(
-                            value: instructor['id'].toString(),
-                            child: Text(instructor['name']),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedInstructor = value;
-                      print('Instructor selected: $value');
-                    });
-                  },
-                ),
-
-                DropdownButton<String>(
-                  hint: Text('Select Day'),
-                  value: selectedDay,
-                  items: days
-                      .map((day) => DropdownMenuItem<String>(
-                            value: day,
-                            child: Text(day),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedDay = value;
-                      print('Day selected: $value');
-                    });
-                  },
-                ),
-
-                DropdownButton<String>(
-                  hint: Text('Select Time'),
-                  value: selectedTime,
-                  items: times
-                      .map((time) => DropdownMenuItem<String>(
-                            value: time,
-                            child: Text(time),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedTime = value;
-                      print('Time selected: $value');
-                    });
-                  },
-                ),
-
-                DropdownButton<String>(
-                  hint: Text('Select Section'),
-                  value: selectedSection,
-                  items: sections
-                      .where((section) =>
-                          section['year'] == courseYearNumber.toString())
-                      .map((section) => DropdownMenuItem<String>(
-                            value: section['id'].toString(),
-                            child: Text('${section['year']}${section['name']}'),
-                          ))
-                      .toList(),
-                  onChanged: (value) async {
-                    setState(() {
-                      selectedSection = value;
-                      print('Section ID selected: $selectedSection');
-                    });
-                  },
-                ),
-                SizedBox(height: 20),
-
-                // Row for the buttons (Cancel and Save)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              content: SingleChildScrollView(
+                child: Column(
                   children: [
-                    // Cancel Button
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Close the dialog
+                    DropdownButton<String>(
+                      hint: Text('Select Instructor'),
+                      value: selectedInstructor,
+                      items: instructors
+                          .map((instructor) => DropdownMenuItem<String>(
+                                value: instructor['id'].toString(),
+                                child: Text(instructor['name']),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          selectedInstructor = value;
+                          print('Instructor selected: $value');
+                        });
                       },
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(color: Colors.black),
-                      ),
                     ),
-
-                    // Save Button
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (selectedInstructor != null &&
-                            selectedDay != null &&
-                            selectedTime != null &&
-                            selectedSection != null) {
-                          final courseResponse = await supabase
-                              .from('college_course')
-                              .select('id')
-                              .eq('code', courseCode)
-                              .maybeSingle();
-
-                          final courseId =
-                              courseResponse?['id']; // Extract course_id
-                          print(courseId);
-                          // Insert or update the teacher_courses table
-                          await supabase.from('teacher_courses').insert([
-                            {
-                              'teacher_id': selectedInstructor,
-                              'course_id': courseId,
-                              'day': selectedDay,
-                              'time': selectedTime,
-                              'section_id': selectedSection,
-                            }
-                          ]);
-                        } else {
-                          print('Please select all fields');
-                        }
+                    DropdownButton<String>(
+                      hint: Text('Select Day'),
+                      value: selectedDay,
+                      items: days
+                          .map((day) => DropdownMenuItem<String>(
+                                value: day,
+                                child: Text(day),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          selectedDay = value;
+                          print('Day selected: $value');
+                        });
                       },
-                      child: Text('Save'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                      ),
+                    ),
+                    DropdownButton<String>(
+                      hint: Text('Select Time'),
+                      value: selectedTime,
+                      items: times
+                          .map((time) => DropdownMenuItem<String>(
+                                value: time,
+                                child: Text(time),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          selectedTime = value;
+                          print('Time selected: $value');
+                        });
+                      },
+                    ),
+                    DropdownButton<String>(
+                      hint: Text('Select Section'),
+                      value: selectedSection,
+                      items: sections
+                          .where((section) =>
+                              section['year'] == courseYearNumber.toString())
+                          .map((section) => DropdownMenuItem<String>(
+                                value: section['id'].toString(),
+                                child: Text(
+                                    '${section['year']}${section['name']}'),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          selectedSection = value;
+                          print('Section ID selected: $selectedSection');
+                        });
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (selectedInstructor != null &&
+                                selectedDay != null &&
+                                selectedTime != null &&
+                                selectedSection != null) {
+                              final courseResponse = await supabase
+                                  .from('college_course')
+                                  .select('id')
+                                  .eq('code', courseCode)
+                                  .maybeSingle();
+
+                              final courseId = courseResponse?['id'];
+                              print(courseId);
+
+                              await supabase.from('teacher_courses').insert([
+                                {
+                                  'teacher_id': selectedInstructor,
+                                  'course_id': courseId,
+                                  'day': selectedDay,
+                                  'time': selectedTime,
+                                  'section_id': selectedSection,
+                                }
+                              ]);
+                              Navigator.of(context).pop();
+                            } else {
+                              print('Please select all fields');
+                            }
+                          },
+                          child: Text('Save'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 16),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
