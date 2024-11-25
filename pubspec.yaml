@@ -22,4 +22,4 @@ flutter:
   uses-material-design: true
   assets:  # Use `assets` instead of `AssetImage`
     - assets/image/
-    - assets/image/backroundplsp.jpg.jpg
+    - assets/image/backgroundplsp.jpg.jpg
