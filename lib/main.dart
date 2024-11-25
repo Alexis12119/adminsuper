@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'home_page.dart'; // Import the HomePage file
 
+// Faculty Table
+// INSERT INTO "public"."faculty" ("id", "email", "password", "name") VALUES ('1', 'admin@gmail.com', 'admin123', 'Joy'), ('2', 'sad@gmail.com', 'sad123', 'Sadness'), ('3', 'anger@gmail.com', 'anger123', 'Anger');
 void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
@@ -101,14 +103,14 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             const SizedBox(height: 20.0),
-                            const Text('Admin Username',
+                            const Text('Admin Email',
                                 style: TextStyle(
                                     fontSize: 14, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4.0),
                             TextFormField(
                               controller: _studentIdController,
                               decoration: const InputDecoration(
-                                hintText: 'Enter Username',
+                                hintText: 'Enter Email',
                                 border: OutlineInputBorder(),
                               ),
                               validator: (value) {
@@ -162,13 +164,53 @@ class _LoginPageState extends State<LoginPage> {
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                   ),
-                                  onPressed: () {
+                                  onPressed: () async {
                                     if (_formKey.currentState!.validate()) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => HomePage()),
-                                      );
+                                      final email =
+                                          _studentIdController.text.trim();
+                                      final password =
+                                          _passwordController.text.trim();
+
+                                      try {
+                                        // Query the faculty table for a matching username and password
+                                        final response = await Supabase
+                                            .instance.client
+                                            .from('faculty')
+                                            .select()
+                                            .eq('email', email)
+                                            .eq('password', password)
+                                            .maybeSingle();
+
+                                        if (response == null) {
+                                          // Invalid credentials
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  'Invalid email or password.'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        } else {
+                                          // Valid credentials, navigate to HomePage
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    HomePage()),
+                                          );
+                                        }
+                                      } catch (error) {
+                                        // Handle Supabase errors
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                                'An error occurred: $error'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
                                     }
                                   },
                                   child: const Text(
