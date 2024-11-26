@@ -21,7 +21,6 @@ class _HomePageState extends State<HomePage> {
     'Faculty Members Account'
   ];
   final SwiperController _swiperController = SwiperController();
-  int currentIndex = 0; // Track current page index
 
   // Configurable button sizes
   double logoutButtonSize = 40.0;
@@ -56,6 +55,16 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Function to go to the previous tile
+  void _previousItem() {
+    _swiperController.previous();  // Navigate to the previous swiper item
+  }
+
+  // Function to go to the next tile
+  void _nextItem() {
+    _swiperController.next();  // Navigate to the next swiper item
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,15 +81,14 @@ class _HomePageState extends State<HomePage> {
             Column(
               children: [
                 buildHeader(),
-                // Add space for logout button
                 Expanded(
                   child: Center(
                     child: Swiper(
                       controller: _swiperController,
                       itemWidth: 750,
                       itemHeight: 350,
-                      loop: true,
-                      duration: 1200,
+                      loop: true,  // Enable looping
+                      duration: 200,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
                         return GestureDetector(
@@ -184,11 +192,6 @@ class _HomePageState extends State<HomePage> {
                       },
                       itemCount: cardOrder.length,
                       layout: SwiperLayout.STACK,
-                      onIndexChanged: (index) {
-                        setState(() {
-                          currentIndex = index; // Update the current page index
-                        });
-                      },
                     ),
                   ),
                 ),
@@ -209,14 +212,28 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // FloatingActionButton (Right side)
+            // Left Arrow Button (Navigate to previous tile)
+            Positioned(
+              left: 16,
+              top: MediaQuery.of(context).size.height / 2 - fabButtonSize / 2,
+              child: FloatingActionButton(
+                onPressed: _previousItem,  // Navigate to the previous tile
+                backgroundColor: Colors.white,
+                elevation: 10,
+                child: Icon(
+                  Icons.arrow_back,
+                  color: Colors.black,
+                  size: fabButtonSize * 0.6,
+                ),
+              ),
+            ),
+
+            // Right Arrow Button (Navigate to next tile)
             Positioned(
               right: 16,
               top: MediaQuery.of(context).size.height / 2 - fabButtonSize / 2,
               child: FloatingActionButton(
-                onPressed: () {
-                  _swiperController.next();
-                },
+                onPressed: _nextItem,  // Navigate to the next tile
                 backgroundColor: Colors.white,
                 elevation: 10,
                 child: Icon(
