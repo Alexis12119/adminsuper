@@ -114,6 +114,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
   List<Program> programs = [];
   List<Section> sections = [];
   bool isLoading = true;
+  List<RealtimeChannel> channels = [];
 
   @override
   void initState() {
@@ -122,74 +123,30 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
     _loadData();
   }
 
-   Widget buildHeader() {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double mainFontSize = screenWidth < 800 ? 22.0 : 28.0;
-    double subFontSize = screenWidth < 800 ? 14.0 : 18.0;
-    double padding = screenWidth < 600 ? 12.0 : 16.0;
-    double iconSize = screenWidth < 600 ? 50.0 : 70.0;
-
-    return Container(
-      color: const Color(0xFFF2F8FC),
-      padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding * 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left icon
-          Image.asset(
-            'assets/image/plsp.png',
-            width: iconSize,
-            height: iconSize,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'PAMANTASAN NG LUNGSOD NG SAN PABLO',
-                style: TextStyle(
-                  fontSize: mainFontSize,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4.0),
-              Text(
-                'College of Computer Studies and Technology',
-                style: TextStyle(
-                  fontSize: subFontSize,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          // Right icon and home button
-          Row(
-            children: [
-              Image.asset(
-                'assets/image/ccst.png',
-                width: iconSize,
-                height: iconSize,
-              ),
-              IconButton(
-                icon: Icon(Icons.home),
-                iconSize: iconSize / 2,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  final supabse = Supabase.instance.client;
+  void subscribeToChannels() async {
+    final unenerolledStudentsChannel = supabase
+        .channel('public')
+        .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'unenrolled_students',
+            callback: (payload) {
+              _loadUnenrolledStudents();
+            })
+        .subscribe();
+    final studentsChannel = supabase
+        .channel('public')
+        .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'students',
+            callback: (payload) {
+              _loadAllStudents();
+            })
+        .subscribe();
+    channels.add(unenerolledStudentsChannel);
+    channels.add(studentsChannel);
   }
 
   Future<void> _loadData() async {
@@ -254,8 +211,8 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
     final response = await supabase
         .from('unenrolled_students')
         .select()
-        .eq('status', 'Pending');
-    print(response);
+        .eq('status', 'Pending')
+        .not('midterm_grade', 'is', null);
 
     setState(() {
       pendingStudents = (response as List)
@@ -295,9 +252,8 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
             .delete()
             .eq('id', student.id);
 
-        // Reload students
-        await _loadUnenrolledStudents();
-
+        _loadUnenrolledStudents();
+        _loadAllStudents();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Student approved successfully')),
         );
@@ -464,6 +420,76 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHeader() {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double mainFontSize = screenWidth < 800 ? 22.0 : 28.0;
+    double subFontSize = screenWidth < 800 ? 14.0 : 18.0;
+    double padding = screenWidth < 600 ? 12.0 : 16.0;
+    double iconSize = screenWidth < 600 ? 50.0 : 70.0;
+
+    return Container(
+      color: const Color(0xFFF2F8FC),
+      padding: EdgeInsets.symmetric(vertical: padding, horizontal: padding * 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Left icon
+          Image.asset(
+            'assets/image/plsp.png',
+            width: iconSize,
+            height: iconSize,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'PAMANTASAN NG LUNGSOD NG SAN PABLO',
+                style: TextStyle(
+                  fontSize: mainFontSize,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4.0),
+              Text(
+                'College of Computer Studies and Technology',
+                style: TextStyle(
+                  fontSize: subFontSize,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          // Right icon and home button
+          Row(
+            children: [
+              Image.asset(
+                'assets/image/ccst.png',
+                width: iconSize,
+                height: iconSize,
+              ),
+              IconButton(
+                icon: Icon(Icons.home),
+                iconSize: iconSize / 2,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomePage()),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
