@@ -2,6 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:adminsuper/home_page.dart';
 
+// Student courses Table
+// INSERT INTO "public"."student_courses" ("student_id", "course_id", "midterm_grade", "status", "id") VALUES ('2', '3', '5.00', 'Pending', '3'), ('2', '4', '5.00', 'Approved', '2'), ('2', '9', '5.00', 'Pending', '1');
+
+// College Course Table
+// INSERT INTO "public"."college_course" ("id", "name", "year_number", "code", "semester") VALUES ('1', 'Networking 2', '2', 'NET212', '2'), ('2', 'Advanced Software Development', '3', 'ITProfEL1', '1'), ('3', 'Computer Programming 1', '1', 'CC111', '2'), ('4', 'Computer Programming 2', '1', 'CC112', '2'), ('5', 'Computer Programming 3', '2', 'CC123', '1'), ('6', 'Capstone 1', '3', 'CP111', '2'), ('7', 'Teleportation 1', '4', 'TP111', '1'), ('8', 'Teleportation 2', '4', 'TP222', '2'), ('9', 'Living in the IT Era', '1', 'LITE', '1');
+
+// Students Table
+// INSERT INTO "public"."students" ("id", "email", "password", "last_name", "section_id", "program_id", "department_id", "first_name") VALUES ('1', 'test@gmail.com', 'test123', 'Manalo', '2', '1', '1', 'Jiro'), ('2', 'corporal461@gmail.com', 'Alexis-121', 'Corporal ', '1', '1', '1', 'Alexis'), ('3', 'kim@gmail.com', 'kim123', 'Caguite', '1', '1', '1', 'Kim'), ('5', 'hello@gmail.com', '123', 'World', '1', '1', '1', 'Hello'), ('6', 'dugong@gmail.com', '123', 'Black', '2', '1', '1', 'Dugong'), ('7', 'john@gmail.com', '123', 'Doe', '3', '1', '1', 'John');
+
+// Unenrolled Students Table
+// INSERT INTO "public"."unenrolled_students" ("id", "first_name", "last_name", "email", "status", "year_number", "section_id", "program_id", "department_id", "password", "semester") VALUES ('4', 'Jane', 'Smith', 'jane@gmail.com', 'Pending', '4', '1', '1', '1', '123', null), ('5', 'Test', 'Ing', 'dugongs@gmail.com', 'Pending', '2', '2', '1', '1', '123', null), ('6', 'Hi', 'Hello', 'hi@gmail.com', 'Pending', '1', '1', '1', '1', '123', null);
+
+// Section Table
+// INSERT INTO "public"."section" ("id", "name", "program_id", "year_number", "semester") VALUES ('1', 'C', '1', '1', '2'), ('2', 'D', '1', '2', '1'), ('3', 'E', '1', '3', '2'), ('4', 'A', '1', '1', '1'), ('5', 'B', '1', '3', '1');
+
 class Department {
   final int id;
   final String name;
@@ -69,6 +84,7 @@ class UnenrolledStudent {
   final int? sectionId;
   final int? programId;
   final int? departmentId;
+  final String semester;
 
   UnenrolledStudent({
     required this.id,
@@ -78,6 +94,7 @@ class UnenrolledStudent {
     required this.password,
     required this.status,
     required this.yearNumber,
+    required this.semester,
     this.sectionId,
     this.programId,
     this.departmentId,
@@ -92,6 +109,7 @@ class UnenrolledStudent {
       password: json['password'],
       status: json['status'],
       yearNumber: json['year_number'],
+      semester: json['semester'],
       sectionId: json['section_id'],
       programId: json['program_id'],
       departmentId: json['department_id'],
@@ -196,7 +214,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
           college_department:department_id(name),
           college_program:program_id(name),
           section:section_id(name, year_number)
-        ''').eq('grade_status', 'Pending');
+        ''');
 
     setState(() {
       pendingStudents = (pendingResponse as List)
@@ -228,31 +246,61 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
         programs: programs,
         sections: sections,
         yearNumber: student.yearNumber,
+        semester: student.semester,
       ),
     );
 
     if (result != null) {
       try {
         // Insert into students table
-        await supabase.from('students').insert({
-          'email': student.email,
-          'first_name': student.firstName,
-          'last_name': student.lastName,
-          'password': student.password,
-          'department_id': result['departmentId'],
-          'program_id': result['programId'],
-          'section_id': result['sectionId'],
-          'grade_status': 'Pending',
-        });
+        final insertStudentResult = await supabase
+            .from('students')
+            .insert({
+              'email': student.email,
+              'first_name': student.firstName,
+              'last_name': student.lastName,
+              'password': student.password,
+              'department_id': result['departmentId'],
+              'program_id': result['programId'],
+              'section_id': result['sectionId'],
+            })
+            .select('id')
+            .single();
 
-        // Delete from unenrolled_students
-        await supabase
-            .from('unenrolled_students')
-            .delete()
-            .eq('id', student.id);
+        final studentId = insertStudentResult['id'];
+
+        // Fetch courses for the student's year and semester
+        final coursesResponse = await supabase
+            .from('college_course')
+            .select('id')
+            .eq('year_number', student.yearNumber.toString())
+            .eq('semester', student.semester);
+        print(student.yearNumber);
+        print(student.semester);
+        print(coursesResponse);
+
+        final courseIds =
+            (coursesResponse as List).map((course) => course['id']).toList();
+
+        // Insert into student_courses
+        for (final courseId in courseIds) {
+          await supabase.from('student_courses').insert({
+            'student_id': studentId,
+            'course_id': courseId,
+            'midterm_grade': '', // Set initial values
+            'status': 'Pending',
+          });
+        }
+
+        // // Remove from unenrolled_students
+        // await supabase
+        //     .from('unenrolled_students')
+        //     .delete()
+        //     .eq('id', student.id);
 
         _loadUnenrolledStudents();
         _loadAllStudents();
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Student approved successfully')),
         );
@@ -501,12 +549,14 @@ class EnrollmentDialog extends StatefulWidget {
   final List<Program> programs;
   final List<Section> sections;
   final int yearNumber;
+  final String semester;
 
   EnrollmentDialog({
     required this.departments,
     required this.programs,
     required this.sections,
     required this.yearNumber,
+    required this.semester,
   });
 
   @override
@@ -526,13 +576,15 @@ class _EnrollmentDialogState extends State<EnrollmentDialog> {
             p.departmentId == selectedDepartment!.id)
         .toList();
 
-    print(widget.sections);
+    print(widget.semester);
     final filteredSections = widget.sections
         .where((s) =>
             selectedProgram != null &&
             s.programId == selectedProgram!.id &&
-            s.yearNumber == widget.yearNumber.toString())
+            s.yearNumber == widget.yearNumber.toString() &&
+            s.semester.toString() == widget.semester)
         .toList();
+    print(filteredSections);
 
     return AlertDialog(
       title: Text('Select Department, Program, and Section'),
