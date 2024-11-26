@@ -55,7 +55,7 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
       section:section_id (name, year_number)
     ),
     college_course (name, code)
-  ''').eq('status', 'Pending');
+  ''').eq('status', 'Pending').not('midterm_grade', 'is', null);
 
       final approvedResponse = await supabase.from('student_courses').select('''
     id,
@@ -89,7 +89,7 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
                   "id": grade['id'],
                 })
             .toList();
-          print(pendingGrades);
+        print(pendingGrades);
 
         approvedGrades = approvedResponse
             .map((grade) => {
@@ -335,8 +335,8 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
     );
   }
 
-  Widget gradeCard(
-      String name, String subject, String section, String midtermGrade, String avatarPath,
+  Widget gradeCard(String name, String subject, String section,
+      String midtermGrade, String avatarPath,
       {VoidCallback? onApprove}) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -351,7 +351,8 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Midterm Grade: $midtermGrade", style: TextStyle(fontFamily: 'Montserrat')),
+            Text("Midterm Grade: $midtermGrade",
+                style: TextStyle(fontFamily: 'Montserrat')),
             Text(subject, style: TextStyle(fontFamily: 'Montserrat')),
             Text(section, style: TextStyle(fontFamily: 'Montserrat')),
           ],

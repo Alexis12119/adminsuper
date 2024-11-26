@@ -27,7 +27,7 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
   final List<Faculty> facultyList = [];
   bool isLoading = true;
 
-    Widget buildHeader() {
+  Widget buildHeader() {
     double screenWidth = MediaQuery.of(context).size.width;
     double mainFontSize = screenWidth < 800 ? 22.0 : 28.0;
     double subFontSize = screenWidth < 800 ? 14.0 : 18.0;
@@ -106,11 +106,12 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
   Future<void> fetchFaculty() async {
     try {
       final response =
-          await Supabase.instance.client.from('faculty').select('*');
+          await Supabase.instance.client.from('teacher').select('*');
       final List<Faculty> fetchedFaculty = (response as List)
           .map((facultyData) => Faculty(
                 id: facultyData['id'].toString(),
-                name: facultyData['name'],
+                firstName: facultyData['first_name'],
+                lastName: facultyData['last_name'],
                 email: facultyData['email'],
                 password: facultyData['password'],
                 color: Colors.grey,
@@ -133,37 +134,40 @@ class _FacultyMembersPageState extends State<FacultyMembersPage> {
     }
   }
 
-Future<void> updateFaculty(Faculty faculty) async {
-  try {
-      await Supabase.instance.client.from('faculty').update({
-        'name': faculty.name,
+  Future<void> updateFaculty(Faculty faculty) async {
+    try {
+      await Supabase.instance.client.from('teacher').update({
+        'first_name': faculty.firstName,
+        'last_name': faculty.lastName,
         'email': faculty.email,
         'password': faculty.password,
       }).eq('id', faculty.id);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${faculty.name}\'s data updated successfully!'),
+          content: Text(
+              '${faculty.firstName} ${faculty.lastName}\'s data updated successfully!'),
           action: SnackBarAction(
             label: 'OK',
             onPressed: () {},
           ),
         ),
       );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Failed to update ${faculty.name}: $e'),
-        action: SnackBarAction(
-          label: 'Retry',
-          onPressed: () {
-            updateFaculty(faculty); // Retry updating
-          },
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Failed to update ${faculty.firstName} ${faculty.lastName}: $e'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () {
+              updateFaculty(faculty); // Retry updating
+            },
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -221,14 +225,16 @@ Future<void> updateFaculty(Faculty faculty) async {
 
 class Faculty {
   final String id;
-  final String name;
+  final String firstName;
+  final String lastName;
   final String email;
   final String password;
   final Color color;
 
   Faculty({
     required this.id,
-    required this.name,
+    required this.firstName,
+    required this.lastName,
     required this.email,
     required this.password,
     required this.color,
@@ -250,7 +256,8 @@ class FacultyCard extends StatefulWidget {
 }
 
 class _FacultyCardState extends State<FacultyCard> {
-  late TextEditingController nameController;
+  late TextEditingController firstNameController;
+  late TextEditingController lastNameController;
   late TextEditingController emailController;
   late TextEditingController passwordController;
   bool obscurePassword = true;
@@ -258,14 +265,16 @@ class _FacultyCardState extends State<FacultyCard> {
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: widget.faculty.name);
+    firstNameController = TextEditingController(text: widget.faculty.firstName);
+    lastNameController = TextEditingController(text: widget.faculty.lastName);
     emailController = TextEditingController(text: widget.faculty.email);
     passwordController = TextEditingController(text: widget.faculty.password);
   }
 
   @override
   void dispose() {
-    nameController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -302,9 +311,11 @@ class _FacultyCardState extends State<FacultyCard> {
           ),
           const SizedBox(height: 12),
           TextField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
-          ),
+              controller: firstNameController,
+              decoration: const InputDecoration(labelText: 'First Name')),
+          TextField(
+              controller: lastNameController,
+              decoration: const InputDecoration(labelText: 'Last Name')),
           TextField(
             controller: emailController,
             decoration: const InputDecoration(labelText: 'Email'),
@@ -332,7 +343,8 @@ class _FacultyCardState extends State<FacultyCard> {
               widget.onSave(
                 Faculty(
                   id: widget.faculty.id,
-                  name: nameController.text,
+                  firstName: firstNameController.text,
+                  lastName: lastNameController.text,
                   email: emailController.text,
                   password: passwordController.text,
                   color: widget.faculty.color,

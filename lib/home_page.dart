@@ -14,8 +14,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<String> cardOrder = ['Manage Students', 'Finalize Grades', 'Teaching Loads', 'Faculty Members Account'];
+  final List<String> cardOrder = [
+    'Manage Students',
+    'Finalize Grades',
+    'Teaching Loads',
+    'Faculty Members Account'
+  ];
   final SwiperController _swiperController = SwiperController();
+  int currentIndex = 0; // Track current page index
 
   // Configurable button sizes
   double logoutButtonSize = 40.0;
@@ -24,22 +30,23 @@ class _HomePageState extends State<HomePage> {
   // Function to show sign out confirmation dialog
   Future<void> _showSignOutDialog() async {
     bool confirmed = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Sign Out"),
-        content: Text("Are you sure you want to sign out?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text("No"),
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text("Sign Out"),
+            content: Text("Are you sure you want to sign out?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text("No"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text("Yes"),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text("Yes"),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
 
     if (confirmed) {
       Navigator.pushReplacement(
@@ -81,22 +88,28 @@ class _HomePageState extends State<HomePage> {
                             if (cardOrder[index] == 'Manage Students') {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => ManageStudentsScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        ManageStudentsScreen()),
                               );
                             } else if (cardOrder[index] == 'Finalize Grades') {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => FinalizeGradesScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        FinalizeGradesScreen()),
                               );
                             } else if (cardOrder[index] == 'Teaching Loads') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => App()),
                               );
-                            } else if (cardOrder[index] == 'Faculty Members Account') {
+                            } else if (cardOrder[index] ==
+                                'Faculty Members Account') {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => AccountsScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) => AccountsScreen()),
                               );
                             }
                           },
@@ -118,39 +131,42 @@ class _HomePageState extends State<HomePage> {
                                   child: Center(
                                     child: cardOrder[index] == 'Manage Students'
                                         ? Image.asset(
-                                      'assets/image/audience.png',
-                                      width: 200,
-                                      height: 200,
-                                    )
+                                            'assets/image/audience.png',
+                                            width: 200,
+                                            height: 200,
+                                          )
                                         : cardOrder[index] == 'Finalize Grades'
-                                        ? Image.asset(
-                                      'assets/image/good-mark.png',
-                                      width: 200,
-                                      height: 200,
-                                    )
-                                        : cardOrder[index] == 'Teaching Loads'
-                                        ? Image.asset(
-                                      'assets/image/blackboard.png',
-                                      width: 200,
-                                      height: 200,
-                                    )
-                                        : cardOrder[index] == 'Faculty Members Account'
-                                        ? Image.asset(
-                                      'assets/image/profile.png',
-                                      width: 200,
-                                      height: 200,
-                                    )
-                                        : Icon(
-                                      Icons.person,
-                                      size: 100,
-                                      color: Colors.grey,
-                                    ),
+                                            ? Image.asset(
+                                                'assets/image/good-mark.png',
+                                                width: 200,
+                                                height: 200,
+                                              )
+                                            : cardOrder[index] ==
+                                                    'Teaching Loads'
+                                                ? Image.asset(
+                                                    'assets/image/blackboard.png',
+                                                    width: 200,
+                                                    height: 200,
+                                                  )
+                                                : cardOrder[index] ==
+                                                        'Faculty Members Account'
+                                                    ? Image.asset(
+                                                        'assets/image/profile.png',
+                                                        width: 200,
+                                                        height: 200,
+                                                      )
+                                                    : Icon(
+                                                        Icons.person,
+                                                        size: 100,
+                                                        color: Colors.grey,
+                                                      ),
                                   ),
                                 ),
                                 Align(
                                   alignment: Alignment.bottomCenter,
                                   child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 16.0),
+                                    padding:
+                                        const EdgeInsets.only(bottom: 16.0),
                                     child: Text(
                                       cardOrder[index],
                                       style: const TextStyle(
@@ -168,6 +184,11 @@ class _HomePageState extends State<HomePage> {
                       },
                       itemCount: cardOrder.length,
                       layout: SwiperLayout.STACK,
+                      onIndexChanged: (index) {
+                        setState(() {
+                          currentIndex = index; // Update the current page index
+                        });
+                      },
                     ),
                   ),
                 ),
@@ -266,8 +287,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(const MaterialApp(home: HomePage()));
 }

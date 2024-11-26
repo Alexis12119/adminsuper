@@ -211,8 +211,7 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen>
     final response = await supabase
         .from('unenrolled_students')
         .select()
-        .eq('status', 'Pending')
-        .not('midterm_grade', 'is', null);
+        .eq('status', 'Pending');
 
     setState(() {
       pendingStudents = (response as List)
