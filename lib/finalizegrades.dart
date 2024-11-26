@@ -84,10 +84,12 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
                       grade['students']['section']['year_number'] +
                       grade['students']['section']['name'],
                   "avatar": 'assets/image/fear.png', // Default avatar
+                  "midterm_grade": grade['midterm_grade'],
                   "student_course_id": grade['id'],
                   "id": grade['id'],
                 })
             .toList();
+          print(pendingGrades);
 
         approvedGrades = approvedResponse
             .map((grade) => {
@@ -100,6 +102,7 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
                       grade['students']['section']['year_number'] +
                       grade['students']['section']['name'],
                   "avatar": 'assets/image/joy.png', // Default avatar
+                  "midterm_grade": grade['midterm_grade'],
                   "student_course_id": grade['id'],
                   "id": grade['id'],
                 })
@@ -281,6 +284,7 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
                                       pendingGrades[index]["name"]!,
                                       pendingGrades[index]["subject"]!,
                                       pendingGrades[index]["section"]!,
+                                      pendingGrades[index]["midterm_grade"]!,
                                       pendingGrades[index]["avatar"]!,
                                       onApprove: () => showApproveDialog(index),
                                     );
@@ -313,6 +317,7 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
                                       approvedGrades[index]["name"]!,
                                       approvedGrades[index]["subject"]!,
                                       approvedGrades[index]["section"]!,
+                                      approvedGrades[index]["midterm_grade"]!,
                                       approvedGrades[index]["avatar"]!,
                                     );
                                   },
@@ -331,7 +336,7 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
   }
 
   Widget gradeCard(
-      String name, String subject, String section, String avatarPath,
+      String name, String subject, String section, String midtermGrade, String avatarPath,
       {VoidCallback? onApprove}) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -346,6 +351,7 @@ class _FinalizeGradesScreenState extends State<FinalizeGradesScreen> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text("Midterm Grade: $midtermGrade", style: TextStyle(fontFamily: 'Montserrat')),
             Text(subject, style: TextStyle(fontFamily: 'Montserrat')),
             Text(section, style: TextStyle(fontFamily: 'Montserrat')),
           ],

@@ -175,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                                         // Query the faculty table for a matching username and password
                                         final response = await Supabase
                                             .instance.client
-                                            .from('faculty')
+                                            .from('admin')
                                             .select()
                                             .eq('email', email)
                                             .eq('password', password)
